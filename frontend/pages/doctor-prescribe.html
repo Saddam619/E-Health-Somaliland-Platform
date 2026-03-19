@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="prescribe">Prescribe</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1 data-i18n="prescribe">Prescribe</h1>
+      <button id="lang-toggle" class="lang-btn">SO</button>
+    </header>
+    <main>
+      <section class="card">
+        <h2 data-i18n="pendingConsultations">Pending Consultations</h2>
+        <div id="pending-consults"></div>
+      </section>
+
+      <form id="prescribe-form" class="card">
+        <h2 data-i18n="prescribe">Prescribe</h2>
+        <p id="selected-patient" class="muted"></p>
+        <div class="form-group">
+          <label for="patient-id" data-i18n="patientId">Patient ID</label>
+          <input type="text" id="patient-id" name="patientId" required>
+        </div>
+        <div id="medicines-list">
+          <div class="medicine-item">
+            <input type="text" name="medicine" placeholder="Medicine" required>
+            <input type="text" name="dosage" placeholder="Dosage" required>
+            <input type="text" name="instructions" placeholder="Instructions" required>
+            <button type="button" class="remove-med">Remove</button>
+          </div>
+        </div>
+        <button type="button" id="add-med">Add Medicine</button>
+        <button type="submit" class="primary" data-i18n="generateRx">Generate Rx</button>
+      </form>
+
+      <div id="qr-container" class="card" style="display:none;">
+        <h3 data-i18n="prescriptionQR">Prescription QR</h3>
+        <canvas id="qr-code"></canvas>
+      </div>
+    </main>
+    <footer>
+      <button onclick="location.href='dashboard.html'" data-i18n="back">Back</button>
+    </footer>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <script type="module" src="../js/doctor-prescribe.js"></script>
+</body>
+</html>

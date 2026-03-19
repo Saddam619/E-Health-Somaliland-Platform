@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="pharmacies">Pharmacies</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1 data-i18n="pharmacies">Licensed Pharmacies</h1>
+      <button id="lang-toggle" class="lang-btn">SO</button>
+    </header>
+    <main>
+      <section class="card">
+        <h2 data-i18n="pharmacyFinder">Nearby Pharmacies</h2>
+        <div id="pharmacies-list"></div>
+      </section>
+      <section class="card">
+        <h2 data-i18n="map">Map</h2>
+        <div id="pharmacy-map" style="height: 250px;"></div>
+      </section>
+    </main>
+    <footer>
+      <button onclick="location.href='dashboard.html'" data-i18n="back">Back</button>
+    </footer>
+  </div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module" src="../js/patient-pharmacies.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Patient Consultation - E-Health Somaliland</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>E-Health Somaliland Platform - Patient Consultation</h1>
+    </header>
+
+    <div class="lang-toggle">
+      <button id="lang-toggle">EN</button>
+    </div>
+
+    <!-- Consultation Form -->
+    <div class="card">
+      <h2>Consultation Request</h2>
+      <form id="consult-form">
+        <label>Name:</label>
+        <input type="text" name="name" required>
+        <label>Age:</label>
+        <input type="number" name="age" required>
+        <label>Phone Number:</label>
+        <input type="tel" name="phone" required>
+        <label>Location (lat,lng):</label>
+        <input type="text" name="location" placeholder="9.5,44.0" required>
+        <label>Address:</label>
+        <input type="text" name="address" required>
+        <label>Symptoms:</label>
+        <input type="text" name="symptoms" required>
+        <label>Explanation:</label>
+        <textarea name="explanation"></textarea>
+        <button type="submit">Submit Consultation</button>
+      </form>
+    </div>
+
+    <!-- Pending Consultation Display -->
+    <div id="pending-consultations" class="card">
+      <h2>Pending Consultation</h2>
+      <p>No consultation requests yet.</p>
+    </div>
+
+    <!-- Emergency Request -->
+    <div class="card">
+      <h2>Emergency Services</h2>
+      <button onclick="location.href='patient-emergency.html'">Request Ambulance / Emergency</button>
+    </div>
+
+    <button id="logout" class="menu-btn">Logout</button>
+  </div>
+
+  <script type="module" src="../js/patient-consult.js"></script>
+</body>
+</html>

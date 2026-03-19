@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="reports">Reports</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1 data-i18n="reports">Reports</h1>
+      <button id="lang-toggle" class="lang-btn">SO</button>
+    </header>
+    <main>
+      <div class="card">
+        <button id="load-reports" class="primary" data-i18n="loadReports">Load Reports</button>
+        <div id="reports-list"></div>
+      </div>
+    </main>
+    <footer>
+      <button onclick="location.href='dashboard.html'" data-i18n="back">Back</button>
+    </footer>
+  </div>
+  <script type="module" src="../js/admin-reports.js"></script>
+</body>
+</html>
