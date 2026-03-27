@@ -1,90 +1,291 @@
-🏥 E-Health Somaliland Platform
-📌 Overview
-The E-Health Somaliland Platform is a mission-driven full-stack web application designed to digitize and secure healthcare services in Somaliland. By connecting patients, doctors, and pharmacies into a single "Chain of Trust," the platform eliminates the dangerous gaps in traditional healthcare delivery.
+# 🏥 E-Health Somaliland Platform
 
-🛑 The Problem We Solve
-In many regions, the healthcare system faces critical challenges that put citizens' lives at risk. This platform is specifically designed to combat:
+![Status](https://img.shields.io/badge/status-active-success)
+![Node.js](https://img.shields.io/badge/backend-Node.js-green)
+![Frontend](https://img.shields.io/badge/frontend-JavaScript-blue)
+![Database](https://img.shields.io/badge/database-SQLite-lightgrey)
+![License](https://img.shields.io/badge/license-educational-blue)
 
-Illegal Medicine Sales: Preventing the distribution of medicine without a valid, verifiable doctor's order.
+---
 
-Unlicensed Pharmacies: Stopping the purchase of low-quality or expired drugs from unregulated vendors.
+## 🌍 Overview
 
-Self-Medication Dangers: Curbing the habit of taking high-risk medications (like antibiotics) without a professional diagnosis.
+The **E-Health Somaliland Platform** is a full-stack healthcare system designed to digitize medical services and improve access to healthcare across Somaliland.
 
-Healthcare Deserts: Providing a digital lifeline for people in remote areas who lack physical access to a clinic.
+It connects **patients, doctors, and pharmacies** into a single ecosystem, enabling a seamless workflow from consultation to prescription verification.
 
-🎯 Project Goals
-✅ Digitize Healthcare: Moving from paper-based risks to secure digital records.
+---
 
-✅ Verify Every Pill: Using QR-coded prescriptions to ensure medicine only comes from licensed pharmacies.
+## 🎯 Vision & Impact
 
-✅ Kill the Black Market: Making it impossible to forge or reuse old prescriptions for illegal sales.
+This project aims to:
 
-✅ Emergency Response: Connecting citizens to the nearest hospital or ambulance instantly.
+* 🏥 Improve healthcare accessibility in underserved regions
+* ⚖️ Promote fairness and transparency in medical services
+* 📲 Replace manual systems with digital workflows
+* 🔐 Prevent prescription fraud using QR verification
+* 🌍 Build scalable health-tech solutions for Africa
 
-✅ Public Education: Providing built-in health tips to improve community wellness and hygiene.
+---
 
-👥 User Roles
-🧑‍⚕️ Patient
-Consult: Request medical help and track status in real-time.
+## ✨ Features
 
-Verified Rx: Receive secure prescriptions that cannot be altered.
+* 📋 Consultation request system
+* 👨‍⚕️ Doctor dashboard for managing patients
+* 💊 Digital prescription system
+* 🔐 Role-based authentication (Patient / Doctor)
+* 📱 QR Code generation for prescriptions
+* 🗺️ Interactive pharmacy map (Somaliland-wide)
+* 🌐 Multi-language support (English / Somali)
 
-Pharmacy Finder: Use an interactive map to locate only licensed and trusted pharmacies.
+---
 
-Education: Access health tips on hydration, hygiene, and disease prevention.
+## 🔄 System Workflow
 
-👨‍⚕️ Doctor
-Manage Requests: View and serve pending consultations efficiently.
+```mermaid
+graph TD
+A[Patient submits consultation] --> B[Doctor reviews request]
+B --> C[Doctor marks as served]
+C --> D[Doctor prescribes medicine]
+D --> E[QR Code generated]
+E --> F[Patient views prescription]
+F --> G[Patient visits pharmacy]
+G --> H[Pharmacy verifies QR]
+```
 
-Digital Prescribing: Issue prescriptions with embedded security data (Doctor ID, Hospital, Phone).
+---
 
-Fraud Prevention: Every prescription generates a unique QR code that links back to the licensed practitioner.
+## 👥 User Roles
 
-💊 Pharmacist (Security-First)
-QR Verification: Scan codes to see the doctor’s credentials and hospital info.
+### 🧑‍⚕️ Patient
 
-Authenticity Check: Ensures the medicine hasn't been expired or tampered with.
+* Register & login
+* Request consultations
+* Track consultation status
+* View prescriptions + QR codes
+* Find nearby pharmacies
 
-⚙️ How the System Works (The Chain of Trust)
-Consultation: Patient submits symptoms via the dashboard.
+---
 
-Diagnosis: Doctor reviews, selects the patient, and enters a prescription.
+### 👨‍⚕️ Doctor
 
-QR Generation: The system locks the doctor's name, phone, hospital, and medicine list into a high-density QR code.
+* View consultation requests
+* Serve patients
+* Issue prescriptions
+* Generate QR codes
 
-Verification: The patient presents the QR (digital or printed). The pharmacist scans it to verify the doctor's license before dispensing. This prevents unprescribed medicine sales.
+---
 
-🧠 Key Features
-🔐 Secure QR Code System: Encrypts prescription data to prevent fraud.
+### 💊 Pharmacy *(Future Enhancement)*
 
-🗺️ Licensed Pharmacy Map: Integrated Leaflet.js map showing verified locations in Hargeisa, Berbera, Borama, and beyond.
+* Scan QR codes
+* Verify prescriptions
+* Dispense medication
 
-🌐 Multi-language: Full support for English and Somali.
+---
 
-📜 Printable Prescriptions: Doctors can generate professional slips for patients without smartphones.
+## 🛠️ Tech Stack
 
-⚡ Health Education: Real-time tips on the dashboard to promote preventative care.
+### Frontend
 
-🏗️ Tech Stack
-Frontend: Vanilla JS, HTML5, CSS3, Leaflet.js (Maps), QRious (QR Generation).
+* HTML
+* CSS
+* JavaScript
+* Leaflet.js (Maps)
 
-Backend: Node.js, Express.js.
+### Backend
 
-Database: SQLite (via Knex.js) for lightweight, portable data management.
+* Node.js
+* Express.js
 
-DevOps: Docker, HAProxy (Load Balancing).
+### Database
 
-🧪 Testing the System
-Preventing Illegal Sales (Test Case)
-Attempt to access the "Prescription" page without a Doctor login (System blocks access).
+* SQLite (Knex.js)
 
-Issue a prescription and scan the QR with a phone.
+### DevOps
 
-Verify: Does it show the Doctor’s phone and Hospital? If yes, the pharmacy can now call the doctor to verify if they are suspicious of the patient.
+* Docker
+* HAProxy (Load Balancer)
 
-👨‍💻 Author
-Gulaid Ahmed Abdi Software Engineering Student African Leadership University
+---
 
-🌟 Impact Vision
-This project is more than code; it is a solution for a healthier Somaliland. By stopping the sale of unprescribed medicine and verifying pharmacy licenses, we save lives. We are building a future where High-Quality Healthcare is not a luxury for the few, but a right for every citizen, everywhere.
+## 📸 Screenshots
+
+> 📌 Add your screenshots here after running the app
+
+### 🧑‍⚕️ Patient Dashboard
+
+```
+(Add screenshot here)
+```
+
+### 👨‍⚕️ Doctor Panel
+
+```
+(Add screenshot here)
+```
+
+### 💊 Prescription with QR Code
+
+```
+(Add screenshot here)
+```
+
+### 🗺️ Pharmacy Map
+
+```
+(Add screenshot here)
+```
+
+---
+
+## 🚀 Installation Guide
+
+### 1️⃣ Clone Repository
+
+```bash
+git clone <your-repo-url>
+cd e-health-platform
+```
+
+---
+
+### 2️⃣ Setup Backend
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+---
+
+### 3️⃣ Run Frontend
+
+Open:
+
+```
+frontend/index.html
+```
+
+OR use Live Server (recommended)
+
+---
+
+## 🧪 How to Test
+
+### Patient Flow
+
+1. Register as patient
+2. Submit consultation
+3. Check status
+4. View prescription + QR
+
+---
+
+### Doctor Flow
+
+1. Login as doctor
+2. View consultations
+3. Serve request
+4. Prescribe medicine
+
+---
+
+## 📡 Key API Endpoints
+
+### Patient
+
+* `POST /consultations`
+* `GET /patients/prescriptions`
+* `GET /patients/pharmacies`
+
+### Doctor
+
+* `GET /doctor/consultations`
+* `PATCH /doctor/consultations/:id/serve`
+* `POST /doctor/prescribe`
+
+---
+
+## 🔐 QR Code System
+
+Each prescription generates a QR code containing:
+
+```json
+{
+  "prescription_id": "...",
+  "patient_name": "...",
+  "doctor_name": "...",
+  "doctor_phone": "...",
+  "doctor_email": "...",
+  "hospital_name": "...",
+  "medicines": [...]
+}
+```
+
+✔ Enables verification
+✔ Prevents fraud
+✔ Improves trust
+
+---
+
+## 🌍 Pharmacy Integration
+
+Includes pharmacies from:
+
+* Hargeisa
+* Berbera
+* Borama
+* Burco
+* Gabiley
+* Ceerigaabo
+
+📍 Displayed on interactive map
+
+---
+
+## ⚠️ Known Issues
+
+* Old prescriptions may not include QR
+* Browser caching may delay updates
+* SQLite resets may remove data
+
+---
+
+## 🔮 Future Improvements
+
+* 📷 QR Code scanner for pharmacies
+* 🔔 Real-time notifications
+* 📱 Mobile application
+* 💳 Payment integration
+* 🤖 AI-assisted diagnosis
+
+---
+
+## 👨‍💻 Author
+
+**Gulaid Ahmed Abdi**
+Software Engineering Student
+African Leadership University
+
+---
+
+## ⭐ Contributing
+
+Contributions are welcome!
+Feel free to fork this repository and submit a pull request.
+
+---
+
+## 📜 License
+
+This project is for educational purposes.
+
+---
+
+## 💡 Final Thought
+
+This project demonstrates how **technology can transform healthcare systems in Africa**, making them more accessible, efficient, and transparent.
+
+---
