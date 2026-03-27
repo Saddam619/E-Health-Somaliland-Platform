@@ -11,27 +11,15 @@ router.post('/register', async (req, res) => {
   try {
     const { name, email, phone, password, role } = req.body;
 
-    if (!name || !password || !role) {
-      return res.status(400).json({ message: "Name, password, and role are required." });
-    }
-
-    // Patients can use email OR phone
-    if (role === "Patient") {
-      if (!email && !phone) {
-        return res.status(400).json({ message: "Patient must provide email OR phone." });
-      }
-    }
-
-    // Other roles must use email
-    if (role !== "Patient" && !email) {
-      return res.status(400).json({ message: "Email is required for this role." });
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ message: "All fields are required (name, email, password, role)." });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       name,
-      email: email || null,
+      email,
       phone: phone || null,
       password: hashedPassword,
       role
@@ -50,26 +38,18 @@ router.post('/register', async (req, res) => {
 
 
 // ======================
-// LOGIN
+// LOGIN (EMAIL ONLY)
 // ======================
 router.post('/login', async (req, res) => {
   try {
+    const { email, password } = req.body;
 
-    const { email, phone, password } = req.body;
-
-    if (!password) {
-      return res.status(400).json({ message: "Password is required." });
+    // ✅ Require email + password
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required." });
     }
 
-    let user;
-
-    if (email) {
-      user = await User.findByEmail(email);
-    } else if (phone) {
-      user = await User.findByPhone(phone);
-    } else {
-      return res.status(400).json({ message: "Provide email OR phone." });
-    }
+    const user = await User.findByEmail(email);
 
     if (!user) {
       return res.status(404).json({ message: "User not found." });
@@ -81,14 +61,15 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: "Incorrect password." });
     }
 
+    // ✅ CREATE TOKEN
     const token = jwt.sign(
       { id: user.id, role: user.role },
       'secret123',
       { expiresIn: '7d' }
     );
 
+    // ✅ SEND TOKEN + USER
     res.json({
-      message: "Login successful",
       token,
       user: {
         id: user.id,

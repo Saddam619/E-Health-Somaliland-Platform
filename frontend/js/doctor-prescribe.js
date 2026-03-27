@@ -1,8 +1,10 @@
 import { get, post, patch } from './api.js';
-import { t, setLanguage, updateUI } from './lang.js';
+import { t, setLanguage } from './lang.js';
 
 const user = JSON.parse(localStorage.getItem('user') || 'null');
 const role = user && (user.role || '').toLowerCase();
+
+// Security Check
 if (!user || role !== 'doctor') {
   location.href = 'auth.html';
 }
@@ -14,32 +16,40 @@ const qrCanvas = document.getElementById('qr-code');
 
 let selectedConsultation = null;
 
+// Language Toggle
 document.getElementById('lang-toggle').onclick = () => {
   const current = localStorage.getItem('lang') || 'en';
   const next = current === 'en' ? 'so' : 'en';
   setLanguage(next);
-  updateUI();
   document.getElementById('lang-toggle').textContent = next.toUpperCase();
 };
 
+// Load Consultations from Backend
 async function loadPendingConsultations() {
-  pendingList.innerHTML = '';
+  pendingList.innerHTML = '<p>Loading...</p>';
   try {
     const consultations = await get('/doctors/consultations');
+    pendingList.innerHTML = '';
+    
     if (!consultations || consultations.length === 0) {
       pendingList.innerHTML = `<p>${t('noConsultations') || 'No pending consultations.'}</p>`;
       return;
     }
+
     consultations.forEach(c => {
       const div = document.createElement('div');
       div.className = 'card consult-item';
       div.dataset.id = c.id;
       div.innerHTML = `
-        <strong>${c.name}</strong> (${c.age} ${t('yearsOld') || 'years old'})<br>
-        ${t('location')}: ${c.location}<br>
-        ${t('symptoms')}: ${c.symptoms}<br>
+        <strong>${c.patient_name || c.name || 'Patient'}</strong><br>
+        ${t('symptoms') || 'Symptoms'}: ${c.symptoms || c.message || 'N/A'}<br>
         <button class="primary serve-btn">${t('serve') || 'Serve'}</button>
       `;
+      
+      // Store the consultation data on the button for easy access
+      const btn = div.querySelector('.serve-btn');
+      btn.onclick = () => selectPatient(c);
+      
       pendingList.appendChild(div);
     });
   } catch (err) {
@@ -48,22 +58,18 @@ async function loadPendingConsultations() {
   }
 }
 
-pendingList.addEventListener('click', async e => {
-  const btn = e.target.closest('.serve-btn');
-  if (!btn) return;
-  const card = btn.closest('.consult-item');
-  if (!card) return;
-  const id = card.dataset.id;
-  const consultations = await get('/doctors/consultations');
-  selectedConsultation = consultations.find(c => String(c.id) === String(id));
-  if (!selectedConsultation) return;
+// Select a patient to prescribe for
+function selectPatient(consultation) {
+  selectedConsultation = consultation;
+  document.getElementById('patient-id').value = consultation.user_id;
+  document.getElementById('selected-patient').textContent = 
+    `${t('prescribingFor') || 'Prescribing for'}: ${consultation.patient_name || consultation.name}`;
+  
+  // Smooth scroll to the form
+  form.scrollIntoView({ behavior: 'smooth' });
+}
 
-  document.getElementById('patient-id').value = selectedConsultation.user_id;
-  document.getElementById('selected-patient').textContent =
-    `${selectedConsultation.name} (${selectedConsultation.age}) - ${selectedConsultation.symptoms}`;
-});
-
-// Add/remove medicine rows
+// Add medicine rows
 document.getElementById('add-med').onclick = () => {
   const container = document.getElementById('medicines-list');
   const item = document.createElement('div');
@@ -77,51 +83,68 @@ document.getElementById('add-med').onclick = () => {
   container.appendChild(item);
 };
 
+// Remove medicine rows
 document.getElementById('medicines-list').addEventListener('click', e => {
   if (e.target.classList.contains('remove-med')) {
-    const item = e.target.closest('.medicine-item');
-    if (item && document.querySelectorAll('.medicine-item').length > 1) {
-      item.remove();
+    const items = document.querySelectorAll('.medicine-item');
+    if (items.length > 1) {
+      e.target.closest('.medicine-item').remove();
     }
   }
 });
 
+// Handle Form Submission
 form.addEventListener('submit', async e => {
   e.preventDefault();
-  const patientId = form.patientId.value.trim();
-  const meds = Array.from(document.querySelectorAll('.medicine-item')).map(row => ({
-    medicine: row.querySelector('input[name="medicine"]').value.trim(),
+  
+  const patientId = document.getElementById('patient-id').value.trim();
+  const medRows = document.querySelectorAll('.medicine-item');
+  
+  const meds = Array.from(medRows).map(row => ({
+    name: row.querySelector('input[name="medicine"]').value.trim(),
     dosage: row.querySelector('input[name="dosage"]').value.trim(),
     instructions: row.querySelector('input[name="instructions"]').value.trim()
-  })).filter(m => m.medicine && m.dosage);
+  })).filter(m => m.name !== "");
 
   if (!patientId || meds.length === 0) {
-    alert(t('fillAllFields'));
+    alert(t('fillAllFields') || 'Please fill all fields');
     return;
   }
 
   try {
+    // 1. Send to Backend
     const res = await post('/doctors/prescribe', {
       patientId,
       consultationId: selectedConsultation ? selectedConsultation.id : null,
       medicines: meds
     });
-    if (selectedConsultation) {
-      // Mark consultation served on backend
-      await patch(`/doctors/consultations/${selectedConsultation.id}/serve`, {});
-      selectedConsultation = null;
-      loadPendingConsultations();
-    }
-    alert(t('success') || 'Prescription issued');
 
-    // Generate QR from server-provided qr_code payload
-    const qrData = res.qr_code || JSON.stringify({ id: res.id, medicines: meds });
-    const qr = new QRious({
-      element: qrCanvas,
-      size: 200,
-      value: qrData
-    });
-    qrContainer.style.display = 'block';
+    // 2. Mark consultation as served if it exists
+    if (selectedConsultation) {
+      await patch(`/doctors/consultations/${selectedConsultation.id}/serve`, {});
+    }
+
+    // 3. Generate the QR Code using the backend data
+    // res.qr_code now contains the full Doctor and Hospital JSON string
+    if (res.qr_code) {
+      new QRious({
+        element: qrCanvas,
+        size: 250,
+        level: 'M',
+        value: res.qr_code
+      });
+      qrContainer.style.display = 'block';
+      qrContainer.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    alert(t('success') || 'Prescription issued successfully');
+    
+    // 4. Reset for next patient
+    form.reset();
+    document.getElementById('selected-patient').textContent = '';
+    selectedConsultation = null;
+    loadPendingConsultations();
+
   } catch (err) {
     console.error(err);
     alert(t('error') || 'Failed to issue prescription');

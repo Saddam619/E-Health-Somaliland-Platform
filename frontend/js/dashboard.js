@@ -22,74 +22,118 @@ const links = {
   ]
 };
 
+// 1. Render Menu
 menu.innerHTML = (links[role] || []).map(l =>
   `<button class="menu-btn primary" onclick="location='${l.href}'">${l.text}</button>`
 ).join('');
 
-// Role-specific loading
+// 2. Render Health Tips (New Feature)
+function loadHealthTips() {
+  const tipsContainer = document.getElementById('health-tips-container');
+  if (!tipsContainer) return;
+
+  // We pull these directly from your lang.js keys
+  const tips = [
+    { title: t('tip1Title'), content: t('tip1Content'), icon: '💧' },
+    { title: t('tip2Title'), content: t('tip2Content'), icon: '🏃‍♂️' },
+    { title: t('tip3Title'), content: t('tip3Content'), icon: '🍎' },
+    { title: t('tip4Title'), content: t('tip4Content'), icon: '😴' },
+    { title: t('tip5Title'), content: t('tip5Content'), icon: '🧼' }
+  ];
+
+  tipsContainer.innerHTML = `
+    <h2 style="margin-top: 20px;">${t('healthTips')}</h2>
+    <div class="tips-grid">
+      ${tips.map(tip => `
+        <div class="card tip-card">
+          <span style="font-size: 2rem;">${tip.icon}</span>
+          <h3>${tip.title}</h3>
+          <p>${tip.content}</p>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// 3. Role-specific loading
 if (role === 'patient') {
   loadPendingConsultations();
 } else if (role === 'doctor') {
   loadDoctorConsultations();
-} else if (role === 'pharmacist') {
-  startNotificationPolling();
 }
 
-// Patient: Pending Consultations
+// Always load tips for everyone
+loadHealthTips();
+
+// --- Patient: Pending Consultations ---
 async function loadPendingConsultations() {
   const container = document.getElementById('pending-consultations');
-  container.innerHTML = '';
-  const consultations = await get('/patients/consultations');
-  if (!consultations || consultations.length === 0) {
-    container.innerHTML = `<p>${t('noConsultations') || 'No consultation requests yet.'}</p>`;
-    return;
-  }
+  if (!container) return;
+  
+  container.innerHTML = '<p>Loading...</p>';
+  try {
+    const consultations = await get('/patients/consultations');
+    container.innerHTML = '';
+    if (!consultations || consultations.length === 0) {
+      container.innerHTML = `<p>${t('noConsultations')}</p>`;
+      return;
+    }
 
-  consultations.forEach(c => {
-    const div = document.createElement('div');
-    div.className = 'consult-item';
-    div.innerHTML = `
-      <strong>${c.name}</strong> (${c.age} ${t('yearsOld') || 'years old'})<br>
-      ${t('location')}: ${c.location}<br>
-      ${t('symptoms')}: ${c.symptoms}<br>
-      ${t('explanation')}: ${c.explanation}<br>
-      <strong>Status:</strong> ${c.status || t('pending')}
-    `;
-    container.appendChild(div);
-  });
+    consultations.forEach(c => {
+      const div = document.createElement('div');
+      div.className = 'card consult-item';
+      div.innerHTML = `
+        <strong>${c.name}</strong> (${c.age} ${t('yearsOld')})<br>
+        <small>${t('symptoms')}: ${c.symptoms}</small><br>
+        <strong>Status:</strong> <span class="badge">${c.status || t('pending')}</span>
+      `;
+      container.appendChild(div);
+    });
+  } catch (err) {
+    container.innerHTML = `<p>${t('error')}</p>`;
+  }
 }
 
-// Doctor: Pending consultations
+// --- Doctor: Pending consultations ---
 async function loadDoctorConsultations() {
-  const consultations = await get('/doctors/consultations');
   const consultList = document.getElementById('doctor-consultations');
   if (!consultList) return;
-  consultList.innerHTML = '';
+  
+  consultList.innerHTML = '<p>Loading...</p>';
+  try {
+    const consultations = await get('/doctors/consultations');
+    consultList.innerHTML = '';
 
-  consultations.forEach(c => {
-    const div = document.createElement('div');
-    div.className = 'consult-item';
-    div.dataset.id = c.id;
-    div.innerHTML = `
-      <strong>${c.name}</strong> (${c.age} ${t('yearsOld')})<br>
-      ${t('location')}: ${c.location}<br>
-      ${t('symptoms')}: ${c.symptoms}<br>
-      <button class="serve">${t('serve')}</button>
-    `;
-    consultList.appendChild(div);
-  });
-
-  consultList.addEventListener('click', async e => {
-    const item = e.target.closest('.consult-item');
-    if (!item) return;
-    const id = item.dataset.id;
-    if (e.target.classList.contains('serve')) {
-      await patch(`/doctors/consultations/${id}/serve`, {});
-      alert(t('consultation') + ' ' + t('served'));
-      loadDoctorConsultations();
-    }
-  });
+    consultations.forEach(c => {
+      const div = document.createElement('div');
+      div.className = 'card consult-item';
+      div.dataset.id = c.id;
+      div.innerHTML = `
+        <strong>${c.name}</strong> (${c.age} ${t('yearsOld')})<br>
+        <small>${t('symptoms')}: ${c.symptoms}</small><br>
+        <button class="serve primary" style="margin-top:10px;">${t('serve')}</button>
+      `;
+      consultList.appendChild(div);
+    });
+  } catch (err) {
+    consultList.innerHTML = `<p>${t('error')}</p>`;
+  }
 }
+
+// Handle Doctor Serve Button
+document.addEventListener('click', async e => {
+  if (e.target.classList.contains('serve')) {
+    const item = e.target.closest('.consult-item');
+    const id = item.dataset.id;
+    try {
+      await patch(`/doctors/consultations/${id}/serve`, {});
+      alert(`${t('consultation')} ${t('served')}`);
+      loadDoctorConsultations();
+    } catch (err) {
+      alert(t('error'));
+    }
+  }
+});
 
 // Logout
 document.getElementById('logout')?.addEventListener('click', () => {

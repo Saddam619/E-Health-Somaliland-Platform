@@ -1,11 +1,11 @@
 import { post } from './api.js';
-import { t, setLanguage, updateUI } from './lang.js';
+import { t, setLanguage, } from './lang.js';
 
 document.getElementById('lang-toggle').onclick = () => {
   const current = localStorage.getItem('lang') || 'en';
   const next = current === 'en' ? 'so' : 'en';
   setLanguage(next);
-  updateUI();
+ 
   document.getElementById('lang-toggle').textContent = next.toUpperCase();
 };
 

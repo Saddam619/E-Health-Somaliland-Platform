@@ -1,23 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dashboard</title>
-<link rel="stylesheet" href="../css/styles.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
-<div class="lang-toggle">
-  <button onclick="parent.setLanguage('en')">EN</button>
-  <button onclick="parent.setLanguage('so')">SO</button>
-</div>
-<div id="app">
-  <header><h1 data-i18n="dashboard">Dashboard</h1></header>
-  <div id="menu" class="card"></div>
-  <button id="logout" class="secondary" data-i18n="logout">Logout</button>
-</div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script type="module" src="../js/dashboard.js"></script>
+  <div class="lang-toggle">
+    <button onclick="location.reload()">🔄</button> </div>
+
+  <div id="app">
+    <header>
+      <h1 data-i18n="dashboard">Dashboard</h1>
+    </header>
+
+    <div id="menu" class="card"></div>
+
+    <div id="pending-consultations"></div>
+    <div id="doctor-consultations"></div>
+
+    <div id="health-tips-container" class="card">
+      <h2 data-i18n="healthTips" style="color: var(--primary); margin-bottom: 1rem;">Health Education Tips</h2>
+      <div id="tips-list"></div>
+    </div>
+
+    <button id="logout" class="secondary" data-i18n="logout" style="width: 100%;">Logout</button>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module" src="../js/dashboard.js"></script>
 </body>
 </html>

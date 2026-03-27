@@ -1,5 +1,5 @@
 import { post, get } from './api.js';
-import { t, setLanguage, updateUI } from './lang.js';
+import { t, setLanguage, } from './lang.js';
 
 const user = JSON.parse(localStorage.getItem('user'));
 const role = user && (user.role || '').toLowerCase();
