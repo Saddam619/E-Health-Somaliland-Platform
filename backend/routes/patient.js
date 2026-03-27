@@ -12,26 +12,18 @@ const router = express.Router();
 // patient-only middleware
 router.use(auth(['patient']));
 
-// Submit a consultation request
+// --- CONSULTATION ROUTE ---
 router.post('/consult', async (req, res) => {
   try {
     const { name, age, phone, location, address, symptoms, explanation } = req.body;
     if (!name || !age || !phone || !location || !address || !symptoms) {
       return res.status(400).send({ error: 'All fields required' });
     }
-
     await Consult.create({
       user_id: req.user.id,
-      name,
-      age,
-      phone,
-      location,
-      address,
-      symptoms,
-      explanation,
+      name, age, phone, location, address, symptoms, explanation,
       status: 'pending'
     });
-
     res.send({ success: true });
   } catch (err) {
     console.error(err);
@@ -39,7 +31,86 @@ router.post('/consult', async (req, res) => {
   }
 });
 
-// Get all consultations for logged-in patient
+// --- UPDATED EMERGENCY ROUTE ---
+router.post('/emergency', async (req, res) => {
+  try {
+    const { name, age, location, address, emergencyType, description } = req.body;
+
+    if (!name || !age || !location || !address || !emergencyType || !description) {
+      console.log("⚠️ Missing fields in request:", { name, age, location, address, emergencyType, description });
+      return res.status(400).send({ error: 'All fields are required' });
+    }
+
+    const hospitals = await Hospital.all();
+    let nearest = null;
+    let minDist = Infinity;
+
+    const coords = location.split(',').map(c => parseFloat(c.trim()));
+    if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
+        const [lat, lon] = coords;
+        hospitals.forEach(h => {
+            if (!h.location) return;
+            const [hLat, hLon] = h.location.split(',').map(c => parseFloat(c.trim()));
+            if (isNaN(hLat) || isNaN(hLon)) return;
+            const d = Math.sqrt((hLat - lat) ** 2 + (hLon - lon) ** 2);
+            if (d < minDist) {
+                minDist = d;
+                nearest = h;
+            }
+        });
+    }
+
+    const nearestHospital = nearest || (hospitals.length > 0 ? hospitals[0] : null);
+
+    await Emergency.create({
+      user_id: req.user.id,
+      name,
+      age,
+      location,
+      address,
+      emergency_type: emergencyType, 
+      description,
+      nearest_hospital: nearestHospital ? nearestHospital.name : 'Unknown',
+      status: 'requested'
+    });
+
+    const user = await Users.findById(req.user.id);
+    if (user && user.phone && nearestHospital) {
+      const message = `Emergency: ${emergencyType} at ${location}. Hospital: ${nearestHospital.name}. Contact: ${nearestHospital.ambulance_contact || 'N/A'}`;
+      try {
+        await sendSMS(user.phone, message);
+      } catch (smsErr) {
+        console.warn("SMS failed to send, but record was created.");
+      }
+    }
+
+    res.send({
+      success: true,
+      nearestHospital: nearestHospital ? {
+        name: nearestHospital.name,
+        location: nearestHospital.location,
+        ambulance_contact: nearestHospital.ambulance_contact || ''
+      } : null
+    });
+
+  } catch (err) {
+    console.error("🔥 DETAILED BACKEND ERROR:", err);
+    res.status(500).send({ error: 'Internal Server Error' });
+  }
+});
+
+// --- LIST HOSPITALS (Added to fix 403 Forbidden error) ---
+router.get('/hospitals', async (req, res) => {
+  try {
+    const data = await Hospital.all();
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to load hospitals" });
+  }
+});
+
+// --- OTHER ROUTES ---
 router.get('/consultations', async (req, res) => {
   try {
     const consultations = await Consult.findByUserId(req.user.id);
@@ -50,64 +121,6 @@ router.get('/consultations', async (req, res) => {
   }
 });
 
-// Submit emergency request
-router.post('/emergency', async (req, res) => {
-  try {
-    const { name, age, location, address, emergencyType, description } = req.body;
-    if (!name || !age || !location || !address || !emergencyType || !description) {
-      return res.status(400).send({ error: 'All fields required' });
-    }
-
-    const hospitals = await Hospital.all();
-    let nearest = null;
-    let minDist = Infinity;
-
-    const [lat, lon] = location.split(',').map(c => parseFloat(c.trim()));
-    if (!isNaN(lat) && !isNaN(lon)) {
-      hospitals.forEach(h => {
-        const [hLat, hLon] = (h.location || '').split(',').map(c => parseFloat(c.trim()));
-        if (isNaN(hLat) || isNaN(hLon)) return;
-        const d = Math.sqrt((hLat - lat) ** 2 + (hLon - lon) ** 2);
-        if (d < minDist) {
-          minDist = d;
-          nearest = h;
-        }
-      });
-    }
-
-    const nearestHospital = nearest || hospitals[0] || null;
-
-    await Emergency.create({
-      user_id: req.user.id,
-      name,
-      age,
-      location,
-      address,
-      emergency_type: emergencyType,
-      description,
-      nearest_hospital: nearestHospital ? nearestHospital.name : null,
-      status: 'requested'
-    });
-
-    const user = await Users.findById(req.user.id);
-    if (user.phone && nearestHospital) {
-      const message = `Emergency request sent: ${emergencyType} at ${location}. Nearest hospital: ${nearestHospital.name}. Ambulance: ${nearestHospital.ambulance_contact || 'N/A'}`;
-      sendSMS(user.phone, message);
-    }
-
-    res.send({
-      success: true,
-      nearestHospital: nearestHospital
-        ? { name: nearestHospital.name, location: nearestHospital.location, ambulance_contact: nearestHospital.ambulance_contact || '' }
-        : null
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send({ error: 'Failed to create emergency request' });
-  }
-});
-
-// List licensed pharmacies
 router.get('/pharmacies', async (req, res) => {
   try {
     const pharmacies = await Pharmacy.licensed();
@@ -118,7 +131,6 @@ router.get('/pharmacies', async (req, res) => {
   }
 });
 
-// Get prescriptions for patient
 router.get('/prescriptions', async (req, res) => {
   try {
     const prescriptions = await Prescription.findByUserId(req.user.id);

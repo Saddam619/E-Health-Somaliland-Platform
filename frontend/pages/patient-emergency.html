@@ -14,6 +14,12 @@
       <button id="lang-toggle" class="lang-btn">SO</button>
     </header>
     <main>
+      <div id="active-emergency" class="card" style="display:none; border-left: 5px solid #e74c3c; background: #fdf2f2; margin-bottom: 1rem;">
+        <h3 style="color: #e74c3c; margin-bottom: 5px;">Active Request Status</h3>
+        <p id="emergency-status-text"></p>
+        <p style="font-size: 0.85rem; color: #666; margin-top: 10px;">Please stay where you are. An ambulance or medical staff is being notified of your location.</p>
+      </div>
+
       <form id="emergency-form" class="card">
         <div class="form-group">
           <label for="name" data-i18n="name">Name</label>
@@ -24,12 +30,12 @@
           <input type="number" id="age" name="age" required>
         </div>
         <div class="form-group">
-          <label for="location" data-i18n="location">Location</label>
-          <input type="text" id="location" name="location" required>
+          <label for="location" data-i18n="location">GPS Location</label>
+          <input type="text" id="location" name="location" required readonly style="background: #f0f0f0; border: 1px solid #ccc;">
         </div>
         <div class="form-group">
-          <label for="address" data-i18n="address">Address</label>
-          <input type="text" id="address" name="address" required>
+          <label for="address" data-i18n="address">Address/Landmark</label>
+          <input type="text" id="address" name="address" required placeholder="Example: Near Hargeisa Library">
         </div>
         <div class="form-group">
           <label for="emergency-type" data-i18n="emergencyType">Emergency Type</label>
@@ -42,14 +48,16 @@
         </div>
         <div class="form-group">
           <label for="description" data-i18n="description">Description</label>
-          <textarea id="description" name="description" required></textarea>
+          <textarea id="description" name="description" required placeholder="Tell us what's wrong..."></textarea>
         </div>
-        <div id="map" style="height: 200px; margin: 1rem 0;"></div>
-        <button type="submit" class="primary" data-i18n="sendEmergency">Send Emergency</button>
+        
+        <div id="map" style="height: 300px; width: 100%; margin: 1rem 0; border-radius: 8px; border: 2px solid #ddd; z-index: 1;"></div>
+        
+        <button type="submit" class="danger" style="width: 100%; background: #e74c3c; color: white; padding: 12px; font-weight: bold; border-radius: 5px; border: none; cursor: pointer;" data-i18n="sendEmergency">Send Emergency</button>
       </form>
     </main>
     <footer>
-      <button onclick="location.href='dashboard.html'" data-i18n="back">Back</button>
+      <button onclick="location.href='dashboard.html'" data-i18n="back" class="secondary">Back to Home</button>
     </footer>
   </div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

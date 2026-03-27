@@ -9,17 +9,28 @@
 <body>
   <div id="app">
     <header>
-      <h1 data-i18n="reports">Reports</h1>
+      <h1 data-i18n="reports">Reports & Dispatch</h1>
       <button id="lang-toggle" class="lang-btn">SO</button>
     </header>
     <main>
       <div class="card">
         <button id="load-reports" class="primary" data-i18n="loadReports">Load Reports</button>
-        <div id="reports-list"></div>
+        
+        <div id="stats-summary" style="display: none; margin-top: 20px; border-bottom: 1px solid #ddd; padding-bottom: 20px;">
+          <h3 data-i18n="summary">System Summary</h3>
+          <p>📋 <span data-i18n="consultations">Consultations</span>: <b id="count-consults">0</b></p>
+          <p>🚨 <span data-i18n="emergencies">Emergencies</span>: <b id="count-emergencies">0</b></p>
+          <p>💊 <span data-i18n="prescriptions">Prescriptions</span>: <b id="count-prescriptions">0</b></p>
+        </div>
+
+        <h3 style="margin-top: 20px;" data-i18n="pendingActions">Active Emergency Requests</h3>
+        <div id="reports-list">
+           <p style="color: gray; text-align: center;">Click "Load Reports" to see details.</p>
+        </div>
       </div>
     </main>
     <footer>
-      <button onclick="location.href='dashboard.html'" data-i18n="back">Back</button>
+      <button onclick="location.href='dashboard.html'" data-i18n="back" class="secondary">Back</button>
     </footer>
   </div>
   <script type="module" src="../js/admin-reports.js"></script>
