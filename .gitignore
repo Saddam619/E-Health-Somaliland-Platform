@@ -1,0 +1,14 @@
+# Dependency folders - these are huge and should not be on Git
+node_modules/
+backend/node_modules/
+
+# Database - keeps your local test data private
+backend/db/database.sqlite
+*.sqlite
+
+# Environment/Secrets
+.env
+
+# OS-specific files
+.DS_Store
+Thumbs.db

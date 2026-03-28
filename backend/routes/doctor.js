@@ -3,8 +3,8 @@ const auth = require('../utils/authMiddleware');
 const Prescription = require('../models/prescription');
 const Users = require('../models/user');
 const Consult = require('../models/consult');
-const knex = require('knex')(require('../db/knexfile').development);
 const Hospital = require('../models/hospital');
+const QRCode = require('qrcode'); // ✅ IMPORTANT
 
 const router = express.Router();
 
@@ -38,7 +38,7 @@ router.patch('/consultations/:id/serve', async (req, res) => {
 });
 
 // ==========================================
-// CREATE PRESCRIPTION WITH ENHANCED QR DATA
+// CREATE PRESCRIPTION WITH REAL QR CODE
 // ==========================================
 router.post('/prescribe', async (req, res) => {
   try {
@@ -55,70 +55,68 @@ router.post('/prescribe', async (req, res) => {
       return res.status(404).send({ error: 'Patient not found' });
     }
 
-    // 3. Verify Consultation (if provided)
+    // 3. Verify Consultation
     let consultation = null;
     if (consultationId) {
       consultation = await Consult.findById(consultationId);
       if (!consultation || String(consultation.user_id) !== String(patientId)) {
-        return res.status(400).send({ error: 'Invalid consultationId for this patient' });
+        return res.status(400).send({ error: 'Invalid consultationId' });
       }
     }
 
-    // 4. Get Doctor and Hospital Info
+    // 4. Get Doctor & Hospital
     const doctor = await Users.findById(req.user.id);
-    const hospitalId = doctor && doctor.hospital_id ? doctor.hospital_id : null;
-    const hospital = hospitalId ? await Hospital.findById(hospitalId) : null;
+    const hospital = doctor?.hospital_id
+      ? await Hospital.findById(doctor.hospital_id)
+      : null;
 
-    // 5. Create Initial Prescription Record
+    // ==========================================
+    // 🔥 CREATE QR DATA (WHAT SCAN WILL SHOW)
+    // ==========================================
+    const qrData = {
+      doctor_name: doctor.name,
+      doctor_phone: doctor.phone || 'N/A',
+      doctor_email: doctor.email || 'N/A',
+      hospital_name: hospital ? hospital.name : 'Unknown Hospital'
+    };
+
+    // ==========================================
+    // 🔥 GENERATE REAL QR IMAGE (BASE64)
+    // ==========================================
+    const qrCodeImage = await QRCode.toDataURL(JSON.stringify(qrData));
+
+    // ==========================================
+    // SAVE PRESCRIPTION (WITH QR IMAGE)
+    // ==========================================
     const [id] = await Prescription.create({
       doctor_id: req.user.id,
       patient_id: patient.id,
-      hospital_id: hospitalId,
+      hospital_id: hospital ? hospital.id : null,
       consultation_id: consultation ? consultation.id : null,
       medicines: JSON.stringify(medicines),
-      qr_code: '' // Placeholder until we generate data below
+      qr_code: qrCodeImage // ✅ REAL QR IMAGE
     });
 
-    // 6. Generate Enhanced QR Data (For Pharmacist Verification)
-    const qrData = {
-      type: "OFFICIAL_PRESCRIPTION",
-      prescription_id: id,
-      date: new Date().toISOString(),
-      patient: {
-        name: patient.name,
-        id: patient.id
-      },
-      doctor: {
-        name: doctor.name,
-        phone: doctor.phone || 'No phone provided',
-        email: doctor.email || 'No email provided'
-      },
-      hospital: {
-        name: hospital ? hospital.name : 'Independent Practice',
-        address: hospital ? hospital.address : 'N/A'
-      },
-      medicines: medicines
-    };
-
-    // 7. Update Record with the QR String
-    const qrCodeString = JSON.stringify(qrData);
-    await knex('prescriptions').where({ id }).update({ qr_code: qrCodeString });
-
-    // 8. Update Consultation status
+    // ==========================================
+    // UPDATE CONSULTATION STATUS
+    // ==========================================
     if (consultation) {
       await Consult.markPrescribed(consultation.id, req.user.id, id, 'prescribed');
     }
 
-    // 9. Return result to frontend
+    // ==========================================
+    // RETURN DATA
+    // ==========================================
     const record = await Prescription.findById(id);
+
     res.json({
       ...record,
       hospital_name: hospital ? hospital.name : null,
-      qr_code: qrCodeString // Explicitly sending the string back
+      qr_code: qrCodeImage // ✅ send image
     });
 
   } catch (err) {
-    console.error("CRITICAL ERROR during prescription creation:", err);
+    console.error("CRITICAL ERROR:", err);
     res.status(500).json({ error: "Failed to create prescription" });
   }
 });

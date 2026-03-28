@@ -17,7 +17,7 @@ async function migrate() {
     tbl.string('phone');
     tbl.string('password').notNullable();
     tbl.string('role').notNullable();
-    tbl.integer('hospital_id').nullable(); // for doctors/admin-managed staff
+    tbl.integer('hospital_id').nullable();
     tbl.json('profile').defaultTo('{}');
     tbl.timestamp('created_at').defaultTo(knex.fn.now());
     tbl.timestamp('updated_at').defaultTo(knex.fn.now());
@@ -39,14 +39,16 @@ async function migrate() {
     tbl.string('status').defaultTo('pending');
   });
 
+  // --- FIXED EMERGENCIES TABLE ---
   await knex.schema.createTable('emergencies', tbl => {
     tbl.increments('id');
     tbl.integer('user_id').references('id').inTable('users');
     tbl.string('name');
     tbl.integer('age');
+    tbl.string('phone'); // <--- ADDED THIS MISSING COLUMN
     tbl.string('location');
     tbl.string('address');
-    tbl.string('emergency_type');
+    tbl.string('emergency_type'); // Matches routes/patient.js
     tbl.text('description');
     tbl.string('nearest_hospital');
     tbl.timestamp('created_at').defaultTo(knex.fn.now());
@@ -59,8 +61,8 @@ async function migrate() {
     tbl.integer('patient_id').references('id').inTable('users');
     tbl.integer('hospital_id').nullable().references('id').inTable('hospitals');
     tbl.integer('consultation_id').nullable().references('id').inTable('consultations');
-    tbl.json('medicines'); // Array of medicines
-    tbl.string('qr_code'); // Store QR data
+    tbl.json('medicines');
+    tbl.string('qr_code');
     tbl.string('status').defaultTo('Prescribed');
     tbl.timestamp('created_at').defaultTo(knex.fn.now());
   });
@@ -68,7 +70,7 @@ async function migrate() {
   await knex.schema.createTable('hospitals', tbl => {
     tbl.increments('id');
     tbl.string('name').notNullable();
-    tbl.string('location').notNullable(); // e.g., "lat,lng"
+    tbl.string('location').notNullable();
     tbl.string('ambulance_contact').defaultTo('');
     tbl.timestamp('created_at').defaultTo(knex.fn.now());
   });
@@ -76,24 +78,23 @@ async function migrate() {
   await knex.schema.createTable('pharmacies', tbl => {
     tbl.increments('id');
     tbl.string('name').notNullable();
-    tbl.string('location').notNullable(); // e.g., "lat,lng"
+    tbl.string('location').notNullable();
     tbl.boolean('is_licensed').defaultTo(true);
     tbl.timestamp('created_at').defaultTo(knex.fn.now());
   });
 
   console.log('Migrations complete');
 
-  // Insert sample data
   const bcrypt = require('bcryptjs');
   const saltRounds = 10;
-
   const hashedPassword = await bcrypt.hash('password', saltRounds);
 
+  // Note: Using lowercase roles (patient, doctor, etc) to match auth middleware
   await knex('users').insert([
-    { name: 'Patient One', email: 'patient@example.com', phone: '1234567890', password: hashedPassword, role: 'Patient' },
-    { name: 'Doctor One', email: 'doctor@example.com', password: hashedPassword, role: 'Doctor', hospital_id: 1 },
-    { name: 'Pharmacist One', email: 'pharmacist@example.com', password: hashedPassword, role: 'Pharmacist' },
-    { name: 'Admin One', email: 'admin@example.com', password: hashedPassword, role: 'Admin' },
+    { name: 'Patient One', email: 'patient@example.com', phone: '1234567890', password: hashedPassword, role: 'patient' },
+    { name: 'Doctor One', email: 'doctor@example.com', password: hashedPassword, role: 'doctor', hospital_id: 1 },
+    { name: 'Pharmacist One', email: 'pharmacist@example.com', password: hashedPassword, role: 'pharmacist' },
+    { name: 'Admin One', email: 'admin@example.com', password: hashedPassword, role: 'admin' },
   ]);
 
   await knex('hospitals').insert([

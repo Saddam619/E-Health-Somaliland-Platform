@@ -29,6 +29,7 @@ body {
   max-width: 500px; 
   margin: 0 auto; 
   padding: 1.5rem; 
+  position: relative;
 }
 
 /* =========================================
@@ -201,7 +202,7 @@ input:focus {
 }
 
 /* =========================================
-   RESPONSIVE DESIGN
+   RESPONSIVE DESIGN (ORIGINAL)
    ========================================= */
 @media (min-width: 600px) {
   #app { 
@@ -217,5 +218,41 @@ input:focus {
   
   .menu-btn {
     width: calc(50% - 10px);
+  }
+}
+
+/* =========================================
+   NEW ADDITION: THREE-COLUMN SIDE IMAGES
+   ========================================= */
+.page-horizontal-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 30px;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.side-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem; /* Aligns with the app top */
+}
+
+.side-img {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  border: 6px solid white;
+}
+
+/* Hide images on smaller screens to keep the login easy to read */
+@media (max-width: 1150px) {
+  .side-container {
+    display: none;
   }
 }

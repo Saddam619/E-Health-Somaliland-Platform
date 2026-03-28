@@ -4,7 +4,7 @@ let hospitals = [];
 let map;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Initialize Map first (Critical: do this before any API calls)
+    // 1. Initialize Map first
     try {
         map = L.map('map').setView([9.5624, 44.0653], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
@@ -12,21 +12,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error("Leaflet map failed to load:", e);
     }
 
-    // 2. Fetch hospitals (Wrapped in try/catch so 403 doesn't break the whole page)
+    // 2. Fetch hospitals (Patient-allowed route)
     try {
-        // Change this to a route patients ARE allowed to see
-        // If you don't have a patient-specific hospital route, use an empty array for now
         const hData = await get('/patients/hospitals').catch(() => []); 
         hospitals = hData || [];
         
         hospitals.forEach(h => {
             if (h.location) {
                 const [lat, lon] = h.location.split(',').map(Number);
-                L.marker([lat, lon]).addTo(map).bindPopup(h.name);
+                L.marker([lat, lon]).addTo(map).bindPopup(`<b>${h.name}</b>`);
             }
         });
     } catch (err) {
-        console.warn("Could not load hospital markers (403 Forbidden), but form will still work.");
+        console.warn("Could not load hospital markers.");
     }
 
     // 3. Get GPS
@@ -34,7 +32,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         navigator.geolocation.getCurrentPosition(pos => {
             const lat = pos.coords.latitude;
             const lon = pos.coords.longitude;
-            document.getElementById('location').value = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+            const locString = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+            document.getElementById('location').value = locString;
             if (map) {
                 L.marker([lat, lon]).addTo(map).bindPopup("Your Location").openPopup();
                 map.setView([lat, lon], 14);
@@ -45,21 +44,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // 4. Submission Logic
 document.getElementById('emergency-form').addEventListener('submit', async (e) => {
-    e.preventDefault(); // This MUST run to stop the refresh
+    e.preventDefault(); 
     
     const form = e.target;
     const submitBtn = form.querySelector('button[type="submit"]');
     
+    // CAPTURING PHONE NUMBER HERE
     const data = {
         name: form.name.value.trim(),
         age: form.age.value.trim(),
+        phone: form.phone.value.trim(), // Added phone
         location: form.location.value.trim(),
         address: form.address.value.trim(),
         emergencyType: document.getElementById('emergency-type').value,
         description: form.description.value.trim()
     };
 
-    // UI Feedback
+    // Simple Frontend Validation
+    if (!data.phone) {
+        alert("Please provide a phone number so we can reach you!");
+        return;
+    }
+
     submitBtn.disabled = true;
     submitBtn.textContent = "Sending...";
 
@@ -67,21 +73,19 @@ document.getElementById('emergency-form').addEventListener('submit', async (e) =
         const res = await post('/patients/emergency', data);
         
         if (res && res.success) {
-            // Show Status Card
             const statusCard = document.getElementById('active-emergency');
             if (statusCard) {
                 statusCard.style.display = 'block';
                 document.getElementById('emergency-status-text').innerHTML = 
-                    `🚨 <b>PENDING</b>: ${data.emergencyType} request sent to dispatch.`;
+                    `🚨 <b>PENDING</b>: ${data.emergencyType} request sent. We will call you at ${data.phone}.`;
                 statusCard.scrollIntoView({ behavior: 'smooth' });
             }
             
             alert("Emergency request submitted successfully!");
             form.reset();
-            document.getElementById('location').value = data.location; // Keep location visible
+            document.getElementById('location').value = data.location; 
         }
     } catch (err) {
-        console.error("Submission failed:", err);
         alert("Submission failed: " + err.message);
     } finally {
         submitBtn.disabled = false;

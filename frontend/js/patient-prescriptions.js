@@ -38,7 +38,7 @@ async function loadPrescriptions() {
       return;
     }
 
-    items.forEach((p, index) => {
+    items.forEach((p) => {
       let meds = [];
       try {
         meds = JSON.parse(p.medicines || '[]');
@@ -49,38 +49,34 @@ async function loadPrescriptions() {
       const div = document.createElement('div');
       div.className = 'card';
 
-      // Unique QR container ID
-      const qrId = `qr-${p.id}-${index}`;
-
       div.innerHTML = `
         <strong>${t('prescription')} #${p.id}</strong><br>
         <span class="badge">${statusLabel(p)}</span><br>
         <small>${new Date(p.created_at).toLocaleString()}</small>
 
         <ul>
-          ${meds.map(m => `<li>${m.medicine} - ${m.dosage} (${m.instructions})</li>`).join('')}
+          ${meds.map(m => `
+            <li>
+              <b>${m.medicine}</b><br>
+              Dosage: ${m.dosage}<br>
+              Instructions: ${m.instructions}
+            </li>
+          `).join('')}
         </ul>
 
-        <div id="${qrId}" style="margin-top:10px;"></div>
+        ${
+          p.qr_code && p.qr_code.startsWith('data:image')
+            ? `
+              <div style="margin-top:10px;">
+                <p><b>Scan QR Code:</b></p>
+                <img src="${p.qr_code}" width="150" height="150" />
+              </div>
+            `
+            : `<p style="color:red;">QR Code not available</p>`
+        }
       `;
 
       list.appendChild(div);
-
-      // ✅ GENERATE QR CODE
-      if (p.qr_code) {
-        try {
-          QRCode.toCanvas(
-            document.getElementById(qrId),
-            p.qr_code,
-            { width: 150 },
-            function (error) {
-              if (error) console.error(error);
-            }
-          );
-        } catch (err) {
-          console.error("QR generation failed:", err);
-        }
-      }
     });
 
   } catch (err) {

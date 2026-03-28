@@ -9,7 +9,7 @@ const Hospital = require('../models/hospital');
 const { sendSMS } = require('../utils/notifications');
 const router = express.Router();
 
-// patient-only middleware
+// Patient-only middleware
 router.use(auth(['patient']));
 
 // --- CONSULTATION ROUTE ---
@@ -26,62 +26,74 @@ router.post('/consult', async (req, res) => {
     });
     res.send({ success: true });
   } catch (err) {
-    console.error(err);
+    console.error("Consultation Error:", err);
     res.status(500).send({ error: 'Failed to create consultation' });
   }
 });
 
-// --- UPDATED EMERGENCY ROUTE ---
+// --- FIXED EMERGENCY ROUTE ---
 router.post('/emergency', async (req, res) => {
   try {
-    const { name, age, location, address, emergencyType, description } = req.body;
+    const { name, age, phone, location, address, emergencyType, description } = req.body;
 
-    if (!name || !age || !location || !address || !emergencyType || !description) {
-      console.log("⚠️ Missing fields in request:", { name, age, location, address, emergencyType, description });
+    // Validation
+    if (!name || !age || !phone || !location || !address || !emergencyType || !description) {
       return res.status(400).send({ error: 'All fields are required' });
     }
 
+    // Logic for Nearest Hospital
     const hospitals = await Hospital.all();
-    let nearest = null;
+    let nearestHospital = null;
     let minDist = Infinity;
 
-    const coords = location.split(',').map(c => parseFloat(c.trim()));
-    if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
-        const [lat, lon] = coords;
-        hospitals.forEach(h => {
-            if (!h.location) return;
-            const [hLat, hLon] = h.location.split(',').map(c => parseFloat(c.trim()));
-            if (isNaN(hLat) || isNaN(hLon)) return;
-            const d = Math.sqrt((hLat - lat) ** 2 + (hLon - lon) ** 2);
-            if (d < minDist) {
-                minDist = d;
-                nearest = h;
-            }
-        });
+    // Safety check for location string format
+    if (location && location.includes(',')) {
+        const coords = location.split(',').map(c => parseFloat(c.trim()));
+        if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
+            const [lat, lon] = coords;
+            hospitals.forEach(h => {
+                if (!h.location || !h.location.includes(',')) return;
+                const [hLat, hLon] = h.location.split(',').map(c => parseFloat(c.trim()));
+                if (isNaN(hLat) || isNaN(hLon)) return;
+                const d = Math.sqrt((hLat - lat) ** 2 + (hLon - lon) ** 2);
+                if (d < minDist) {
+                    minDist = d;
+                    nearestHospital = h;
+                }
+            });
+        }
     }
 
-    const nearestHospital = nearest || (hospitals.length > 0 ? hospitals[0] : null);
+    // Fallback if no hospital found
+    if (!nearestHospital && hospitals.length > 0) {
+        nearestHospital = hospitals[0];
+    }
 
+    // SAVE TO DATABASE
+    // Note: ensure your DB table has 'emergency_type' and 'phone' columns!
     await Emergency.create({
       user_id: req.user.id,
       name,
       age,
+      phone, 
       location,
       address,
-      emergency_type: emergencyType, 
+      emergency_type: emergencyType, // Mapped to DB naming convention
       description,
-      nearest_hospital: nearestHospital ? nearestHospital.name : 'Unknown',
-      status: 'requested'
+      nearest_hospital: nearestHospital ? nearestHospital.name : 'Center Admin',
+      status: 'requested',
+      created_at: new Date()
     });
 
-    const user = await Users.findById(req.user.id);
-    if (user && user.phone && nearestHospital) {
-      const message = `Emergency: ${emergencyType} at ${location}. Hospital: ${nearestHospital.name}. Contact: ${nearestHospital.ambulance_contact || 'N/A'}`;
-      try {
-        await sendSMS(user.phone, message);
-      } catch (smsErr) {
-        console.warn("SMS failed to send, but record was created.");
-      }
+    // SMS logic
+    try {
+        const user = await Users.findById(req.user.id);
+        if (user && user.phone && nearestHospital) {
+            const message = `Emergency: ${emergencyType} at ${location}. Hospital: ${nearestHospital.name}.`;
+            await sendSMS(user.phone, message);
+        }
+    } catch (smsErr) {
+        console.warn("SMS ignored, record saved successfully.");
     }
 
     res.send({
@@ -89,7 +101,7 @@ router.post('/emergency', async (req, res) => {
       nearestHospital: nearestHospital ? {
         name: nearestHospital.name,
         location: nearestHospital.location,
-        ambulance_contact: nearestHospital.ambulance_contact || ''
+        ambulance_contact: nearestHospital.ambulance_contact || 'N/A'
       } : null
     });
 
@@ -99,24 +111,21 @@ router.post('/emergency', async (req, res) => {
   }
 });
 
-// --- LIST HOSPITALS (Added to fix 403 Forbidden error) ---
+// --- REMAINING GET ROUTES ---
 router.get('/hospitals', async (req, res) => {
   try {
     const data = await Hospital.all();
     res.json(data);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "Failed to load hospitals" });
   }
 });
 
-// --- OTHER ROUTES ---
 router.get('/consultations', async (req, res) => {
   try {
     const consultations = await Consult.findByUserId(req.user.id);
     res.json(consultations);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: 'Failed to fetch consultations' });
   }
 });
@@ -126,7 +135,6 @@ router.get('/pharmacies', async (req, res) => {
     const pharmacies = await Pharmacy.licensed();
     res.json(pharmacies);
   } catch (err) {
-    console.error(err);
     res.status(500).send({ error: 'Failed to fetch pharmacies' });
   }
 });
@@ -136,7 +144,6 @@ router.get('/prescriptions', async (req, res) => {
     const prescriptions = await Prescription.findByUserId(req.user.id);
     res.json(prescriptions);
   } catch (err) {
-    console.error(err);
     res.status(500).send({ error: 'Failed to fetch prescriptions' });
   }
 });
