@@ -3,37 +3,63 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title data-i18n="verify">Verify</title>
+  <title data-i18n="verify">Verify Prescription</title>
   <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    /* Added some basic styling to ensure the scanner looks good */
+    #qr-reader {
+      width: 100%;
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      margin-top: 10px;
+      background: #fafafa;
+    }
+    #qr-reader__dashboard_section_csr button {
+      padding: 8px 15px;
+      background-color: #2c3e50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
   <div id="app">
     <header>
-      <h1 data-i18n="verify">Verify</h1>
+      <h1 data-i18n="verify">Verify Prescription</h1>
       <button id="lang-toggle" class="lang-btn">SO</button>
     </header>
+
     <main>
       <div class="card">
-        <button id="scan-qr" class="primary" data-i18n="scanQR">Scan QR</button>
-        <video id="qr-video" style="width:100%; display:none;"></video>
+        <button id="scan-qr" class="primary" data-i18n="scanQR">Scan QR Code</button>
+        <div id="qr-reader" style="display: none;"></div>
       </div>
+
       <div class="card">
         <h3 data-i18n="manualEntry">Manual Entry</h3>
         <label for="rx-id" data-i18n="prescriptionId">Prescription ID</label>
-        <input id="rx-id" type="number" placeholder="e.g. 1">
+        <input id="rx-id" type="number" placeholder="e.g. 9">
         <button id="verify-id" class="secondary" data-i18n="verifyRx">Verify Rx</button>
       </div>
+
       <div id="prescription-details" class="card" style="display:none;">
         <h3 data-i18n="prescriptionDetails">Prescription Details</h3>
-        <p id="rx-info"></p>
-        <button id="verify-rx" class="primary" data-i18n="verifyRx">Verify Rx</button>
+        <div id="rx-info">
+            </div>
+        <br>
+        <button id="verify-rx" class="primary" data-i18n="confirmIssue">Confirm & Issue Medicine</button>
       </div>
     </main>
+
     <footer>
       <button onclick="location.href='dashboard.html'" data-i18n="back">Back</button>
     </footer>
   </div>
+
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  
   <script type="module" src="../js/pharmacist-verify.js"></script>
 </body>
 </html>
