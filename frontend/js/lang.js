@@ -92,8 +92,7 @@ const translations = {
     map: "Map",
     licensed: "Licensed",
     unlicensed: "Unlicensed",
-    prescription: "Prescription"
-    ,
+    prescription: "Prescription",
     manualEntry: "Manual Entry",
     prescriptionId: "Prescription ID"
   },
@@ -190,25 +189,21 @@ const translations = {
     map: "Khariidadda",
     licensed: "Leh shati",
     unlicensed: "Aan lahayn shati",
-    prescription: "Qoraal"
-    ,
+    prescription: "Qoraal",
     manualEntry: "Gacanta ku geli",
     prescriptionId: "Aqoonsiga Qoraalka"
   }
 };
 
-let currentLang = 'en';
+// 1. Get saved language OR default to 'en'
+let currentLang = localStorage.getItem('lang') || 'en';
 
-export function setLanguage(lang) {
-  currentLang = lang;
-  updateUI();
-}
-
+// 2. Export functions for use in other JS modules
 export function t(key) {
   return translations[currentLang][key] || key;
 }
 
-function updateUI() {
+export function updateUI() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     el.textContent = t(key);
@@ -218,3 +213,15 @@ function updateUI() {
     el.placeholder = t(key);
   });
 }
+
+export function setLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('lang', lang); // Save to browser memory
+  updateUI();
+}
+
+// 3. IMPORTANT: Make it global so HTML buttons can click it
+window.setLanguage = setLanguage;
+
+// 4. Run immediately when script loads
+updateUI();
