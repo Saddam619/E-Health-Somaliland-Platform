@@ -4,16 +4,14 @@ const Prescription = require('../models/prescription');
 const Users = require('../models/user');
 const Consult = require('../models/consult');
 const Hospital = require('../models/hospital');
-const QRCode = require('qrcode'); // ✅ IMPORTANT
+const QRCode = require('qrcode');
 
 const router = express.Router();
 
 // Only doctors can access these routes
 router.use(auth(['doctor']));
 
-// ==========================================
 // GET PENDING CONSULTATIONS
-// ==========================================
 router.get('/consultations', async (req, res) => {
   try {
     const consultations = await Consult.findPendingWithPatient();
@@ -24,9 +22,7 @@ router.get('/consultations', async (req, res) => {
   }
 });
 
-// ==========================================
 // MARK CONSULTATION AS SERVED
-// ==========================================
 router.patch('/consultations/:id/serve', async (req, res) => {
   try {
     await Consult.markServed(req.params.id, req.user.id, 'served');
@@ -37,9 +33,7 @@ router.patch('/consultations/:id/serve', async (req, res) => {
   }
 });
 
-// ==========================================
-// CREATE PRESCRIPTION WITH REAL QR CODE
-// ==========================================
+// CREATE PRESCRIPTION (RESTORED PROFESSIONAL FORMAT)
 router.post('/prescribe', async (req, res) => {
   try {
     const { patientId, consultationId, medicines } = req.body;
@@ -49,70 +43,56 @@ router.post('/prescribe', async (req, res) => {
       return res.status(400).send({ error: 'patientId and medicines are required' });
     }
 
-    // 2. Verify Patient
+    // 2. Fetch involved parties
     const patient = await Users.findById(patientId);
-    if (!patient || String(patient.role).toLowerCase() !== 'patient') {
-      return res.status(404).send({ error: 'Patient not found' });
-    }
-
-    // 3. Verify Consultation
-    let consultation = null;
-    if (consultationId) {
-      consultation = await Consult.findById(consultationId);
-      if (!consultation || String(consultation.user_id) !== String(patientId)) {
-        return res.status(400).send({ error: 'Invalid consultationId' });
-      }
-    }
-
-    // 4. Get Doctor & Hospital
     const doctor = await Users.findById(req.user.id);
-    const hospital = doctor?.hospital_id
-      ? await Hospital.findById(doctor.hospital_id)
-      : null;
+    const hospital = doctor?.hospital_id ? await Hospital.findById(doctor.hospital_id) : null;
 
-    // ==========================================
-    // 🔥 CREATE QR DATA (WHAT SCAN WILL SHOW)
-    // ==========================================
-    const qrData = {
-      doctor_name: doctor.name,
-      doctor_phone: doctor.phone || 'N/A',
-      doctor_email: doctor.email || 'N/A',
-      hospital_name: hospital ? hospital.name : 'Unknown Hospital'
-    };
+    if (!patient) return res.status(404).send({ error: 'Patient not found' });
 
-    // ==========================================
-    // 🔥 GENERATE REAL QR IMAGE (BASE64)
-    // ==========================================
-    const qrCodeImage = await QRCode.toDataURL(JSON.stringify(qrData));
-
-    // ==========================================
-    // SAVE PRESCRIPTION (WITH QR IMAGE)
-    // ==========================================
+    // 3. STEP ONE: Create the Database record first to get the real ID
     const [id] = await Prescription.create({
       doctor_id: req.user.id,
       patient_id: patient.id,
       hospital_id: hospital ? hospital.id : null,
-      consultation_id: consultation ? consultation.id : null,
+      consultation_id: consultationId || null,
       medicines: JSON.stringify(medicines),
-      qr_code: qrCodeImage // ✅ REAL QR IMAGE
+      qr_code: '' // Leave empty for a moment
     });
 
-    // ==========================================
-    // UPDATE CONSULTATION STATUS
-    // ==========================================
-    if (consultation) {
-      await Consult.markPrescribed(consultation.id, req.user.id, id, 'prescribed');
+    // 4. STEP TWO: Prepare the QR Data (Restores your professional view)
+    const qrData = {
+      id: id, // ✅ Added ID so pharmacist can verify
+      doctor_name: doctor.name,
+      doctor_phone: doctor.phone || 'N/A',
+      doctor_email: doctor.email || 'N/A',
+      hospital_name: hospital ? hospital.name : 'Unknown Hospital',
+      patient_name: patient.name || 'N/A',
+      date: new Date().toLocaleString(),
+      prescriptions: medicines.map(m => ({
+        medicine: m.name || m.medicine,
+        dosage: m.dosage,
+        instructions: m.instructions
+      }))
+    };
+
+    // 5. STEP THREE: Generate the QR Image from the full data object
+    const qrCodeImage = await QRCode.toDataURL(JSON.stringify(qrData));
+
+    // 6. STEP FOUR: Update the record with the generated image
+    await Prescription.update(id, { qr_code: qrCodeImage });
+
+    // 7. Update Consultation if it exists
+    if (consultationId) {
+      await Consult.markPrescribed(consultationId, req.user.id, id, 'prescribed');
     }
 
-    // ==========================================
-    // RETURN DATA
-    // ==========================================
+    // 8. Return the final record to the frontend
     const record = await Prescription.findById(id);
-
     res.json({
       ...record,
-      hospital_name: hospital ? hospital.name : null,
-      qr_code: qrCodeImage // ✅ send image
+      hospital_name: hospital ? hospital.name : 'Unknown Hospital',
+      qr_code: qrCodeImage 
     });
 
   } catch (err) {

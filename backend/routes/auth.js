@@ -3,86 +3,62 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const knex = require('knex')(require('../db/knexfile').development);
 
-// ======================
 // REGISTER
-// ======================
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, phone, password, role } = req.body;
-
+    const { name, email, phone, password, role, hospital_id } = req.body;
     if (!name || !email || !password || !role) {
-      return res.status(400).json({ message: "All fields are required (name, email, password, role)." });
+      return res.status(400).json({ message: "Missing required fields." });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const user = await User.create({
       name,
       email,
       phone: phone || null,
       password: hashedPassword,
-      role
+      role: role.toLowerCase(),
+      hospital_id: role.toLowerCase() === 'doctor' ? (hospital_id || null) : null
     });
 
-    res.json({
-      message: "User registered successfully",
-      user
-    });
-
+    res.json({ message: "User registered successfully", user });
   } catch (err) {
-    console.error("REGISTER ERROR:", err);
     res.status(500).json({ message: "Registration failed", error: err.message });
   }
 });
 
-
-// ======================
-// LOGIN (EMAIL ONLY)
-// ======================
+// LOGIN (Joins with Hospitals to get the Name)
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    
+    // Join users with hospitals to get the actual name (e.g., 'Manhal Hospital')
+    const user = await knex('users')
+      .leftJoin('hospitals', 'users.hospital_id', 'hospitals.id')
+      .where('users.email', email)
+      .select('users.*', 'hospitals.name as hospital_name')
+      .first();
 
-    // ✅ Require email + password
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required." });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ message: "Invalid email or password." });
     }
 
-    const user = await User.findByEmail(email);
+    const token = jwt.sign({ id: user.id, role: user.role }, 'secret123', { expiresIn: '7d' });
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
-    }
-
-    const passwordMatch = await bcrypt.compare(password, user.password);
-
-    if (!passwordMatch) {
-      return res.status(401).json({ message: "Incorrect password." });
-    }
-
-    // ✅ CREATE TOKEN
-    const token = jwt.sign(
-      { id: user.id, role: user.role },
-      'secret123',
-      { expiresIn: '7d' }
-    );
-
-    // ✅ SEND TOKEN + USER
     res.json({
       token,
       user: {
         id: user.id,
         name: user.name,
-        email: user.email,
-        phone: user.phone,
-        role: user.role
+        role: user.role,
+        hospital_id: user.hospital_id,
+        hospital_name: user.hospital_name || 'General Hospital'
       }
     });
-
   } catch (err) {
-    console.error("LOGIN ERROR:", err);
-    res.status(500).json({ message: "Login failed", error: err.message });
+    res.status(500).json({ message: "Login failed" });
   }
 });
 

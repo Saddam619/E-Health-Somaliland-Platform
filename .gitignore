@@ -12,3 +12,13 @@ backend/db/database.sqlite
 # OS-specific files
 .DS_Store
 Thumbs.db
+# Ignore all images
+*.png
+*.jpg
+*.jpeg
+
+# Or ignore specific files
+image-1.png
+image-2.png
+image-3.png
+image.png
