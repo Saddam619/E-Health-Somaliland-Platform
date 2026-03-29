@@ -134,7 +134,7 @@ G --> H[Pharmacy verifies QR]
 ### 🗺️ Pharmacy Map
 
 ```
-![Pharmacy Map](image-2.png)
+![Pharmacy Map](./screenshots/image-2.png)
 ```
 
 ---
