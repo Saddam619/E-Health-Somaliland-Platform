@@ -232,21 +232,21 @@ Includes pharmacies from:
 
 ---
 
-## ⚠️ Known Issues
+## ⚠️ System Status & Notes
 
-* Old prescriptions may not include QR
-* Browser caching may delay updates
-* SQLite resets may remove data
+* **Data Persistence:** Uses SQLite for development; data may reset if the database file is manually deleted.
+* **Camera Permissions:** Ensure your browser allows camera access for the Prescription Verification feature.
+* **Multilingual Support:** Somali (SO) and English (EN) are fully integrated; additional regional dialects are planned.
 
 ---
 
-## 🔮 Future Improvements
+## 🔮 Roadmap & Future Vision
 
-* 📷 QR Code scanner for pharmacies
-* 🔔 Real-time notifications
-* 📱 Mobile application
-* 💳 Payment integration
-* 🤖 AI-assisted diagnosis
+* **🤖 AI-Assisted Diagnosis:** Integrating a Lightweight LLM to help doctors analyze symptoms faster.
+* **🔔 Real-time Alerts:** implementing WebSockets for instant emergency "Adeegga Degdegga ah" notifications.
+* **💳 E-Dahab & Zaad Integration:** Seamless payment for consultations and prescriptions.
+* **📱 Native Mobile App:** Dedicated iOS and Android versions for better accessibility in rural areas.
+* **🏥 Hospital Network Expansion:** Connecting major hospitals in Hargeisa and beyond to a centralized patient history database.
 
 ---
 
