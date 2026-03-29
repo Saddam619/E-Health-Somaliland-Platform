@@ -116,25 +116,25 @@ G --> H[Pharmacy verifies QR]
 ### 🧑‍⚕️ Patient Dashboard
 
 ```
-(Add screenshot here)
+![alt text](image.png)
 ```
 
 ### 👨‍⚕️ Doctor Panel
 
 ```
-(Add screenshot here)
+![alt text](image-3.png)
 ```
 
 ### 💊 Prescription with QR Code
 
 ```
-(Add screenshot here)
+![alt text](image-1.png)
 ```
 
 ### 🗺️ Pharmacy Map
 
 ```
-(Add screenshot here)
+![alt text](image-2.png)
 ```
 
 ---
@@ -265,9 +265,9 @@ Includes pharmacies from:
 
 ## 👨‍💻 Author
 
-**Gulaid Ahmed Abdi**
+**Saddam Daahir Adam**
 Software Engineering Student
-African Leadership University
+African Leadership University(ALU)
 
 ---
 
