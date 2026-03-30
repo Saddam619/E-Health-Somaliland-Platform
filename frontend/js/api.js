@@ -5,10 +5,10 @@
  */
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-// ⚠️ REPLACE 'your-app-name' with the name you choose on Render in Step 3
+// ✅ LIVE BACKEND LINK ADDED BELOW
 const API_BASE = isLocal 
     ? "http://localhost:5000/api" 
-    : "https://your-app-name.onrender.com/api"; 
+    : "https://e-health-somaliland-platform-2.onrender.com/api"; 
 
 /**
  * ✅ AUTH HEADERS
@@ -54,7 +54,6 @@ export async function post(endpoint, data) {
         return await res.json();
     } catch (err) {
         console.error("POST error:", err);
-        // This helps you see why a request failed (e.g., missing fields)
         alert("Error: " + err.message); 
         return { success: false, error: err.message };
     }
