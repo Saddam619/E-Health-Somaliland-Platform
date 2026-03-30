@@ -114,16 +114,16 @@ G --> H[Pharmacy verifies QR]
 📌 screenshots here after running the app
 
 ### 🧑‍⚕️ Patient Dashboard
-![Patient Dashboard](./screenshots/image.png)
+![Patient Dashboard](../screenshots/image.png)
 
 ### 👨‍⚕️ Doctor Panel
-![Doctor Panel](./screenshots/image-3.png)
+![Doctor Panel](../screenshots/image-3.png)
 
 ### 💊 Prescription with QR Code
-![Prescription with QR Code](./screenshots/image-1.png)
+![Prescription with QR Code](../screenshots/image-1.png)
 
 ### 🗺️ Pharmacy Map
-![Pharmacy Map](./screenshots/image-2.png)
+![Pharmacy Map](../screenshots/image-2.png)
 
 
 ## 🚀 Installation Guide
