@@ -233,10 +233,14 @@ Includes pharmacies from:
 ---
 
 ## ⚠️ System Status & Notes
+🟢 Current Operational Status
+User Authentication: Fully functional (JWT-based).
 
-* **Data Persistence:** Uses SQLite for development; data may reset if the database file is manually deleted.
-* **Camera Permissions:** Ensure your browser allows camera access for the Prescription Verification feature.
-* **Multilingual Support:** Somali (SO) and English (EN) are fully integrated; additional regional dialects are planned.
+Multilingual Support: English (EN) and Somali (SO) fully integrated.
+
+Prescription Generation: Functional with QR Code generation (QRious library).
+
+Pharmacist Verification: Functional with live Camera/Scanner (Html5Qrcode library).planned.
 
 ---
 
