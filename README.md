@@ -109,22 +109,23 @@ G --> H[Pharmacy verifies QR]
 
 ---
 
-## 📸 Screenshots
-
-📌 screenshots here after running the app
+## 📸 System Screenshots
 
 ### 🧑‍⚕️ Patient Dashboard
+*View and manage your health journey.*
 ![Patient Dashboard](./screenshots/image.png)
 
 ### 👨‍⚕️ Doctor Panel
+*Review consultations and serve patients efficiently.*
 ![Doctor Panel](./screenshots/image-3.png)
 
-### 💊 Prescription with QR Code
+### 💊 Verified Prescription (QR Code)
+*Secure data to prevent counterfeit medicine usage.*
 ![Prescription with QR Code](./screenshots/image-1.png)
 
-### 🗺️ Pharmacy Map
+### 🗺️ Pharmacy Locator
+*Find the nearest medical help instantly.*
 ![Pharmacy Map](./screenshots/image-2.png)
----
 
 ## 🚀 Installation Guide
 
