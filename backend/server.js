@@ -56,12 +56,14 @@ async function seedHospitals() {
 }
 
 // ✅ Dynamic Port for Deployment
-// process.env.PORT is required for Render/Railway/Heroku
+// Render requires '0.0.0.0' and the PORT environment variable to pass health checks
 const PORT = process.env.PORT || 5000;
 
 require('./db/init')().then(async () => {
     await seedHospitals();
-    app.listen(PORT, () => {
+    
+    // ✅ I ADDED '0.0.0.0' HERE. This allows the server to accept external traffic.
+    app.listen(PORT, '0.0.0.0', () => {
         console.log('-----------------------------------------');
         console.log(`🚀 Server running on port ${PORT}`);
         console.log('-----------------------------------------');
