@@ -3,59 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title data-i18n="prescribe">Prescribe</title>
+  <title data-i18n="prescribe">Prescribe - E-Health Somaliland</title>
   <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
   <div id="app">
-    <header>
+    <header class="top-bar">
       <h1 data-i18n="prescribe">Prescribe</h1>
       <button id="lang-toggle" class="lang-btn">SO</button>
     </header>
 
-    <main>
-      <section class="card">
+    <main class="page-horizontal-wrapper" style="flex-direction: column; align-items: center;">
+      <section class="card" style="width: 90%; max-width: 600px; margin-bottom: 20px;">
         <h2 data-i18n="pendingConsultations">Pending Consultations</h2>
         <div id="pending-consults"></div>
       </section>
 
-      <form id="prescribe-form" class="card">
-        <h2 data-i18n="prescribe">Prescribe</h2>
-        <p id="selected-patient" class="muted"></p>
+      <form id="prescribe-form" class="card" style="width: 90%; max-width: 600px;">
+        <h2 data-i18n="prescribe">Issue Prescription</h2>
+        <p id="selected-patient" style="color: #2c7a7b; font-weight: bold;"></p>
 
         <div class="form-group">
           <label for="patient-id" data-i18n="patientId">Patient ID</label>
-          <input type="text" id="patient-id" name="patientId" required>
+          <input type="text" id="patient-id" name="patientId" required readonly placeholder="Select a patient above">
         </div>
 
         <div id="medicines-list">
-          <div class="medicine-item">
-            <input type="text" name="medicine" placeholder="Medicine" required>
-            <input type="text" name="dosage" placeholder="Dosage" required>
-            <input type="text" name="instructions" placeholder="Instructions" required>
-            <button type="button" class="remove-med">Remove</button>
+          <div class="medicine-item" style="border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">
+            <input type="text" name="medicine" placeholder="Medicine Name" required style="margin-bottom: 5px;">
+            <input type="text" name="dosage" placeholder="Dosage (e.g. 1x3)" required style="margin-bottom: 5px;">
+            <input type="text" name="instructions" placeholder="Instructions (e.g. After meals)" required>
+            <button type="button" class="remove-med" style="background: #e53e3e; color: white; margin-top: 5px;">Remove</button>
           </div>
         </div>
 
-        <button type="button" id="add-med">Add Medicine</button>
-        <button type="submit" class="primary" data-i18n="generateRx">Generate Rx</button>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button type="button" id="add-med" style="flex: 1;">+ Add Medicine</button>
+            <button type="submit" class="primary" style="flex: 2;" data-i18n="generateRx">Generate Rx & QR</button>
+        </div>
       </form>
 
-      <div id="qr-container" class="card" style="display:none;">
-        <h3 data-i18n="prescriptionQR">Prescription QR</h3>
-        <canvas id="qr-code"></canvas>
+      <div id="qr-container" class="card" style="display:none; text-align: center; margin-top: 20px; width: 90%; max-width: 600px;">
+        <h3 data-i18n="prescriptionQR">Prescription QR Code</h3>
+        <p style="font-size: 0.8rem; color: #666;">Patient can scan this at the Pharmacy</p>
+        <canvas id="qr-code" style="margin: 20px auto;"></canvas>
       </div>
     </main>
 
-    <footer>
-      <button onclick="location.href='dashboard.html'" data-i18n="back">Back</button>
+    <footer style="margin-top: 40px; text-align: center; padding-bottom: 40px;">
+      <button onclick="location.href='dashboard.html'" data-i18n="back">Back to Dashboard</button>
     </footer>
   </div>
 
-  <!-- ✅ LOCAL QR LIBRARY -->
-  <script src="../js/qrious.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
-  <!-- YOUR SCRIPT -->
   <script type="module" src="../js/doctor-prescribe.js"></script>
 </body>
 </html>
