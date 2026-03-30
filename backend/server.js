@@ -1,6 +1,11 @@
 const express = require('express');
 const cors = require('cors');
-const knex = require('knex')(require('./db/knexfile').development);
+
+// ✅ ENVIRONMENT FIX
+const environment = process.env.NODE_ENV || 'development';
+const config = require('./db/knexfile')[environment];
+const knex = require('knex')(config);
+
 const authRoutes = require('./routes/auth');
 const patientRoutes = require('./routes/patient');
 const doctorRoutes = require('./routes/doctor');
@@ -9,11 +14,16 @@ const adminRoutes = require('./routes/admin');
 
 const app = express();
 
-// ✅ Standard Middleware
+// ✅ Middleware
 app.use(cors());
 app.use(express.json());
 
-// ✅ Registration Dropdown Route
+// ✅ ROOT ROUTE (VERY IMPORTANT FOR RENDER)
+app.get('/', (req, res) => {
+    res.send('E-Health Backend Running ✅');
+});
+
+// ✅ Hospitals API
 app.get('/api/hospitals', async (req, res) => {
     try {
         const hospitals = await knex('hospitals').select('id', 'name');
@@ -24,7 +34,7 @@ app.get('/api/hospitals', async (req, res) => {
     }
 });
 
-// ✅ Routes Mounting
+// ✅ Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/doctors', doctorRoutes);
@@ -33,7 +43,7 @@ app.use('/api/admins', adminRoutes);
 
 global.knex = knex;
 
-// ✅ Hospital Seeding
+// ✅ Seed hospitals
 async function seedHospitals() {
     const list = [
         { name: 'Hargeisa General Hospital', location: 'Hargeisa' },
@@ -55,18 +65,14 @@ async function seedHospitals() {
     }
 }
 
-// ✅ Dynamic Port for Deployment
-// Render requires '0.0.0.0' and the PORT environment variable to pass health checks
+// ✅ PORT FIX
 const PORT = process.env.PORT || 5000;
 
 require('./db/init')().then(async () => {
     await seedHospitals();
     
-    // ✅ I ADDED '0.0.0.0' HERE. This allows the server to accept external traffic.
     app.listen(PORT, '0.0.0.0', () => {
-        console.log('-----------------------------------------');
         console.log(`🚀 Server running on port ${PORT}`);
-        console.log('-----------------------------------------');
     });
 }).catch(err => {
     console.error('❌ DB init error:', err);
