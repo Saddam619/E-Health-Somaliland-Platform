@@ -13,14 +13,12 @@
 </header>
 
 <div class="page-horizontal-wrapper">
-
     <div class="side-container">
         <img src="../images/somaliland-flag.png" class="side-img" alt="Somaliland Flag">
     </div>
 
     <div id="app">
         <div class="lang-toggle">
-          <!-- ✅ FIXED BUTTONS -->
           <button onclick="setLanguage('en')">EN</button>
           <button onclick="setLanguage('so')">SO</button>
         </div>
@@ -31,17 +29,17 @@
 
         <div class="card">
           <form id="auth-form">
-            <div class="form-group">
+            <div class="form-group" id="name-group" style="display:none;">
               <label data-i18n="name">Name</label>
               <input name="name" type="text" data-i18n-placeholder="name" />
             </div>
 
             <div class="form-group">
               <label data-i18n="email">Email</label>
-              <input name="email" type="text" data-i18n-placeholder="email" required />
+              <input name="email" type="email" data-i18n-placeholder="email" required />
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="phone-group" style="display:none;">
               <label data-i18n="phone">Phone Number</label>
               <input name="phone" type="tel" data-i18n-placeholder="phone" />
             </div>
@@ -53,7 +51,7 @@
 
             <div class="form-group" id="role-group" style="display:none;">
               <label data-i18n="role">Role</label>
-              <select name="role">
+              <select name="role" id="role-select">
                 <option value="patient" data-i18n="patient">Patient</option>
                 <option value="doctor" data-i18n="doctor">Doctor</option>
                 <option value="pharmacist" data-i18n="pharmacist">Pharmacist</option>
@@ -61,11 +59,18 @@
               </select>
             </div>
 
+            <div class="form-group" id="hospital-group" style="display:none;">
+              <label>Select Hospital</label>
+              <select name="hospital_id" id="hospital-select">
+                <option value="">Loading hospitals...</option>
+              </select>
+            </div>
+
             <button class="primary" type="submit" data-i18n="submit">Submit</button>
           </form>
 
           <p id="toggle">
-            <a href="#" data-i18n="register">Don't have an account? Register</a>
+            <a href="#" id="toggle-link" data-i18n="register">Don't have an account? Register</a>
           </p>
         </div>
     </div>
@@ -73,14 +78,9 @@
     <div class="side-container">
         <img src="../images/beautiful-somaliland-ai.png" class="side-img" alt="Landscape">
     </div>
-
 </div>
 
-<!-- ✅ LOAD lang.js FIRST -->
 <script type="module" src="../js/lang.js"></script>
-
-<!-- ✅ THEN auth.js -->
 <script type="module" src="../js/auth.js"></script>
-
 </body>
 </html>
