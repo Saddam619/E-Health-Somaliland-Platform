@@ -124,7 +124,7 @@ G --> H[Pharmacy verifies QR]
 
 ### 🗺️ Pharmacy Map
 ![Pharmacy Map](./screenshots/image-2.png)
----
+
 
 ## 🚀 Installation Guide
 
