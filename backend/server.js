@@ -8,12 +8,12 @@ const pharmacistRoutes = require('./routes/pharmacist');
 const adminRoutes = require('./routes/admin');
 
 const app = express();
+
+// ✅ Standard Middleware
 app.use(cors());
 app.use(express.json());
 
-// ==========================================
-// ✅ ROUTE FOR REGISTRATION DROPDOWN
-// ==========================================
+// ✅ Registration Dropdown Route
 app.get('/api/hospitals', async (req, res) => {
     try {
         const hospitals = await knex('hospitals').select('id', 'name');
@@ -24,6 +24,7 @@ app.get('/api/hospitals', async (req, res) => {
     }
 });
 
+// ✅ Routes Mounting
 app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/doctors', doctorRoutes);
@@ -32,9 +33,7 @@ app.use('/api/admins', adminRoutes);
 
 global.knex = knex;
 
-// ==========================================
-// ✅ SEED HOSPITALS (Includes Required Location)
-// ==========================================
+// ✅ Hospital Seeding
 async function seedHospitals() {
     const list = [
         { name: 'Hargeisa General Hospital', location: 'Hargeisa' },
@@ -56,14 +55,15 @@ async function seedHospitals() {
     }
 }
 
-// ==========================================
-// ✅ INITIALIZE DATABASE AND START SERVER
-// ==========================================
+// ✅ Dynamic Port for Deployment
+// process.env.PORT is required for Render/Railway/Heroku
+const PORT = process.env.PORT || 5000;
+
 require('./db/init')().then(async () => {
-    await seedHospitals(); // Runs the seed function safely now
-    app.listen(5000, () => {
+    await seedHospitals();
+    app.listen(PORT, () => {
         console.log('-----------------------------------------');
-        console.log('🚀 Server running on http://localhost:5000');
+        console.log(`🚀 Server running on port ${PORT}`);
         console.log('-----------------------------------------');
     });
 }).catch(err => {

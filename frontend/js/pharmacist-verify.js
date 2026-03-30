@@ -4,14 +4,13 @@ import { t, setLanguage } from './lang.js';
 const user = JSON.parse(localStorage.getItem('user') || 'null');
 const role = user && (user.role || '').toLowerCase();
 
-// Protect Route
 if (!user || role !== 'pharmacist') {
     window.location.href = 'auth.html';
 }
 
 let qrScanner;
+let isVerifying = false; // Prevent double-triggering
 
-// --- LANGUAGE TOGGLE ---
 const langBtn = document.getElementById('lang-toggle');
 if (langBtn) {
     langBtn.onclick = () => {
@@ -22,9 +21,7 @@ if (langBtn) {
     };
 }
 
-// --- SCANNING LOGIC ---
 const scanBtn = document.getElementById('scan-qr');
-
 if (scanBtn) {
     scanBtn.onclick = () => {
         const readerElement = document.getElementById('qr-reader');
@@ -38,12 +35,13 @@ if (scanBtn) {
             { fps: 10, qrbox: { width: 250, height: 250 } },
             false
         );
-
         qrScanner.render(onScanSuccess, onScanError);
     };
 }
 
 async function onScanSuccess(decodedText) {
+    if (isVerifying) return; // Stop if already processing
+    
     try {
         if (qrScanner) {
             await qrScanner.clear();
@@ -52,12 +50,10 @@ async function onScanSuccess(decodedText) {
         }
 
         const data = JSON.parse(decodedText);
-        
         const infoBox = document.getElementById('rx-info');
+        
         if (infoBox) {
-            // Updated to handle both 'name' and 'medicine' keys
             const meds = data.prescriptions ? data.prescriptions.map(m => m.name || m.medicine).join(', ') : "N/A";
-            
             infoBox.innerHTML = `
                 <div style="text-align: left; background: #f4f7f6; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
                     <h4 style="margin-top:0; color:#2c3e50;">Prescription Details</h4>
@@ -72,34 +68,37 @@ async function onScanSuccess(decodedText) {
 
         document.getElementById('prescription-details').style.display = 'block';
 
-        // Automatically trigger verification using the ID from the QR JSON
         if (data.id) {
             verifyPrescription(data.id);
         }
-
     } catch (e) {
         console.error("Scan Error:", e);
-        alert("Invalid QR format. Please use a valid prescription code.");
+        alert("Invalid QR format.");
     }
 }
 
 function onScanError(error) { }
 
 async function verifyPrescription(id) {
+    if (isVerifying) return;
+    isVerifying = true;
+
     try {
-        // Sends the ID to your backend route
-        const res = await post('/pharmacists/verify', { id });
+        // ✅ The endpoint in server.js is /api/pharmacists/verify
+        // api.js adds the /api, so we just need /pharmacists/verify
+        const res = await post('/pharmacists/verify', { id: parseInt(id) });
         
         if (res && res.valid) {
-            alert("✅ Prescription verified successfully! It has been removed from the patient's active list.");
-            document.getElementById('prescription-details').style.display = 'none';
+            alert("✅ Prescription verified successfully!");
             location.reload(); 
         } else {
-            alert("❌ Error: " + (res.message || "Invalid or already verified."));
+            alert("❌ Error: " + (res.error || "Invalid or already verified."));
+            isVerifying = false;
         }
     } catch (err) {
         console.error("API Error:", err);
-        alert("Failed to connect to server.");
+        alert("Failed to connect to server: " + err.message);
+        isVerifying = false;
     }
 }
 
