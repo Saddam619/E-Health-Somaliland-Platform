@@ -114,17 +114,17 @@ G --> H[Pharmacy verifies QR]
 📌 screenshots here after running the app
 
 ### 🧑‍⚕️ Patient Dashboard
-![Patient Dashboard](../screenshots/image.png)
+![Patient Dashboard](./screenshots/image.png)
 
 ### 👨‍⚕️ Doctor Panel
-![Doctor Panel](../screenshots/image-3.png)
+![Doctor Panel](./screenshots/image-3.png)
 
 ### 💊 Prescription with QR Code
-![Prescription with QR Code](../screenshots/image-1.png)
+![Prescription with QR Code](./screenshots/image-1.png)
 
 ### 🗺️ Pharmacy Map
-![Pharmacy Map](../screenshots/image-2.png)
-
+![Pharmacy Map](./screenshots/image-2.png)
+---
 
 ## 🚀 Installation Guide
 
@@ -233,14 +233,10 @@ Includes pharmacies from:
 ---
 
 ## ⚠️ System Status & Notes
-🟢 Current Operational Status
-User Authentication: Fully functional (JWT-based).
 
-Multilingual Support: English (EN) and Somali (SO) fully integrated.
-
-Prescription Generation: Functional with QR Code generation (QRious library).
-
-Pharmacist Verification: Functional with live Camera/Scanner (Html5Qrcode library).planned.
+* **Data Persistence:** Uses SQLite for development; data may reset if the database file is manually deleted.
+* **Camera Permissions:** Ensure your browser allows camera access for the Prescription Verification feature.
+* **Multilingual Support:** Somali (SO) and English (EN) are fully integrated; additional regional dialects are planned.
 
 ---
 
