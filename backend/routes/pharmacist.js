@@ -3,48 +3,58 @@ const auth = require('../utils/authMiddleware');
 const Prescription = require('../models/prescription');
 const Users = require('../models/user');
 const Hospital = require('../models/hospital');
-
 const router = express.Router();
 
 router.use(auth(['pharmacist']));
 
-// GET ALL UNVERIFIED PRESCRIPTIONS
+// ✅ GET /api/pharmacists/prescriptions
 router.get('/prescriptions', async (req, res) => {
     try {
         const prescriptions = await Prescription.all();
-        res.json(prescriptions.filter(p => p.status !== 'Verified'));
+        // Only return those not yet verified
+        res.send(prescriptions.filter(p => p.status === 'Prescribed'));
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).send({ error: err.message });
     }
 });
 
-// VERIFY PRESCRIPTION
+// ✅ POST /api/pharmacists/verify
 router.post('/verify', async (req, res) => {
-    const { id } = req.body;
+    const { id, qr_code } = req.body;
+    let rxId = id;
 
-    if (!id) {
-        return res.status(400).json({ valid: false, error: 'Prescription ID is required' });
+    // Handle scanned QR data if passed as a string
+    if (!rxId && qr_code) {
+        try {
+            const parsed = typeof qr_code === 'string' ? JSON.parse(qr_code) : qr_code;
+            rxId = parsed.id;
+        } catch (e) {
+            return res.status(400).send({ error: 'Invalid qr_code payload' });
+        }
     }
 
-    try {
-        const p = await Prescription.findById(id);
+    if (!rxId) return res.status(400).send({ error: 'Prescription ID is required' });
 
+    try {
+        const p = await Prescription.findById(rxId);
+        
         if (!p) {
-            return res.status(404).json({ valid: false, error: 'Prescription not found' });
+            return res.status(404).send({ error: 'Prescription not found in database.' });
         }
 
         if (p.status === 'Verified') {
-            return res.json({ valid: false, error: 'Already verified' });
+            return res.status(400).send({ error: 'This prescription has already been verified and issued.' });
         }
 
-        await Prescription.updateStatus(id, 'Verified');
+        // ✅ Update status to 'Verified'
+        await Prescription.updateStatus(rxId, 'Verified');
 
         const doctor = p.doctor_id ? await Users.findById(p.doctor_id) : null;
         const hospital = p.hospital_id ? await Hospital.findById(p.hospital_id) : null;
 
         res.json({
             valid: true,
-            message: "✅ Prescription verified successfully!",
+            message: "Successfully verified",
             prescription: {
                 ...p,
                 status: 'Verified',
@@ -52,10 +62,9 @@ router.post('/verify', async (req, res) => {
                 hospital_name: hospital ? hospital.name : null
             }
         });
-
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ valid: false, error: "Server error during verification" });
+        console.error("Verification DB Error:", err);
+        res.status(500).send({ error: "Internal server error during verification" });
     }
 });
 
